@@ -46,39 +46,59 @@ int main(int argc, char **argv) {
 	}
 
 
-	SDL_Texture *bg = loadTexture("res/Chloe.jpg", renderer);
-	SDL_Texture *image = loadTexture("res/smile.png", renderer);
-	if (bg == nullptr || image == nullptr)
+	SDL_Texture *bg = loadTexture("res/bg.png", renderer);
+	SDL_Texture *character = loadTexture("res/Alice.png", renderer);
+	if (bg == nullptr || character == nullptr)
 		return 4;
 
 
-	// Render images
-
-	SDL_RenderClear(renderer);
-
-	int bW, bH;
-	SDL_QueryTexture(bg, NULL, NULL, &bW, &bH);
-
-	for(int i=0; i < SCREEN_WIDTH; i+=bW)
-		for(int j=0; j < SCREEN_HEIGHT; j+=bH)
-			renderTexture(bg, renderer, i, j);
-
+	// Main Loop
 
 	int iW, iH;
-	SDL_QueryTexture(image, NULL, NULL, &iW, &iH);
-	int x = SCREEN_WIDTH / 2 - iW / 2;
-	int y = SCREEN_HEIGHT / 2 - iH / 2;
-	renderTexture(image, renderer, x, y);
+	SDL_QueryTexture(character, NULL, NULL, &iW, &iH);
+	int char_x = SCREEN_WIDTH / 2 - iW / 2;
+	int char_y = SCREEN_HEIGHT / 2 - iH / 2;
+	int char_w = iW + 20;
+	int char_h = iH + 20;
 
-	SDL_RenderPresent(renderer);
+	SDL_Event e;
+	bool quit = false;
 
-	SDL_Delay(4000);
+	while (!quit) {
+		while (SDL_PollEvent(&e)) {
+			if (e.type == SDL_QUIT)
+				quit = true;
+			if (e.type == SDL_KEYDOWN)
+				switch(e.key.keysym.sym) {
+					case SDLK_LEFT: char_x -= 20; break;
+					case SDLK_RIGHT: char_x += 20; break;
+					case SDLK_UP: char_y -= 20; break;
+					case SDLK_DOWN: char_y += 20; break;
+					case SDLK_ESCAPE: quit = true; break;
+				}
+			if (e.type == SDL_MOUSEBUTTONDOWN)
+				quit = true;
+		}
+
+		// Render images
+
+		SDL_RenderClear(renderer);
+
+		int bW, bH;
+		SDL_QueryTexture(bg, NULL, NULL, &bW, &bH);
+
+		renderTexture(bg, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+		renderTexture(character, renderer, char_x, char_y, char_w, char_h);
+
+		SDL_RenderPresent(renderer);
+	}
 
 
 	// Cleanup
 
 	SDL_DestroyTexture(bg);
-	SDL_DestroyTexture(image);
+	SDL_DestroyTexture(character);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(win);
 
