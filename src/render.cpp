@@ -15,20 +15,21 @@ SDL_Texture* loadTexture(const std::string &file, SDL_Renderer *ren) {
 }
 
 
-void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, int w, int h) {
-	SDL_Rect dst;
-	dst.x = x;
-	dst.y = y;
-	dst.w = w;
-	dst.h = h;
-
-	SDL_RenderCopy(ren, tex, NULL, &dst);
+void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, SDL_Rect dst, SDL_Rect *clip = nullptr) {
+	SDL_RenderCopy(ren, tex, clip, &dst);
 }
 
 
-void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y) {
-	int w, h;
-	SDL_QueryTexture(tex, NULL, NULL, &w, &h);
+void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, SDL_Rect *clip = nullptr) {
+	SDL_Rect dst;
+	dst.x = x;
+	dst.y = y;
+	if (clip != nullptr) {
+		dst.w = clip->w;
+		dst.h = clip->h;
+	}
+	else
+		SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h);
 
-	renderTexture(tex, ren, x, y, w, h);
+	renderTexture(tex, ren, dst, clip);
 }

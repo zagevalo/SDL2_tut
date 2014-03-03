@@ -54,12 +54,13 @@ int main(int argc, char **argv) {
 
 	// Main Loop
 
+	SDL_Rect char_box;
 	int iW, iH;
 	SDL_QueryTexture(character, NULL, NULL, &iW, &iH);
-	int char_x = SCREEN_WIDTH / 2 - iW / 2;
-	int char_y = SCREEN_HEIGHT / 2 - iH / 2;
-	int char_w = iW + 20;
-	int char_h = iH + 20;
+	char_box.x = SCREEN_WIDTH / 2 - iW / 2;
+	char_box.y = SCREEN_HEIGHT / 2 - iH / 2;
+	char_box.w = iW + 20;
+	char_box.h = iH + 20;
 
 	SDL_Event e;
 	bool quit = false;
@@ -70,10 +71,10 @@ int main(int argc, char **argv) {
 				quit = true;
 			if (e.type == SDL_KEYDOWN)
 				switch(e.key.keysym.sym) {
-					case SDLK_LEFT: char_x -= 20; break;
-					case SDLK_RIGHT: char_x += 20; break;
-					case SDLK_UP: char_y -= 20; break;
-					case SDLK_DOWN: char_y += 20; break;
+					case SDLK_LEFT: char_box.x -= 20; break;
+					case SDLK_RIGHT: char_box.x += 20; break;
+					case SDLK_UP: char_box.y -= 20; break;
+					case SDLK_DOWN: char_box.y += 20; break;
 					case SDLK_ESCAPE: quit = true; break;
 				}
 			if (e.type == SDL_MOUSEBUTTONDOWN)
@@ -87,9 +88,14 @@ int main(int argc, char **argv) {
 		int bW, bH;
 		SDL_QueryTexture(bg, NULL, NULL, &bW, &bH);
 
-		renderTexture(bg, renderer, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		SDL_Rect bg_box;
+		bg_box.x = 0;
+		bg_box.y = 0;
+		bg_box.w = SCREEN_WIDTH;
+		bg_box.h = SCREEN_HEIGHT;
+		renderTexture(bg, renderer, bg_box, nullptr);
 
-		renderTexture(character, renderer, char_x, char_y, char_w, char_h);
+		renderTexture(character, renderer, char_box.x, char_box.y, nullptr);
 
 		SDL_RenderPresent(renderer);
 	}
