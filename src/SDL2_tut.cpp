@@ -53,6 +53,8 @@ int main(int argc, char **argv) {
 		return 4;
 
 
+	const Uint8 *keys = SDL_GetKeyboardState(NULL);
+
 	// Main Loop
 
 	SDL_Rect char_clips[8][4];
@@ -66,7 +68,7 @@ int main(int argc, char **argv) {
 	}
 
 	int direction_state = 4; // 0 - up, 1 - up_right, 2 - right, 3 - right_down, 4 - down,
-							 // 5 - down_left, 6 - left, 7 -left_up
+							 // 5 - down_left, 6 - left, 7 - left_up
 
 	int anim_frame = 0;
 
@@ -81,6 +83,8 @@ int main(int argc, char **argv) {
 
 	while (!quit) {
 
+		//SDL_PumpEvents();
+
 		SDL_RenderClear(renderer);
 
 		int bW, bH;
@@ -93,52 +97,95 @@ int main(int argc, char **argv) {
 		bg_box.h = SCREEN_HEIGHT;
 		renderTexture(bg, renderer, bg_box, nullptr);
 
-		while (SDL_PollEvent(&e)) {
+		if (SDL_PollEvent(&e)) {
 			if (e.type == SDL_QUIT)
 				quit = true;
-			if (e.type == SDL_KEYDOWN)
-				switch(e.key.keysym.sym) {
-					case SDLK_LEFT:
-						if (char_box.x > 0)
-							char_box.x -= 20;
-						direction_state = 6;
-						if (anim_frame >= 3)
-							anim_frame = 0;
-						else
-							++anim_frame;
-						break;
-					case SDLK_RIGHT:
-						if (char_box.x < (SCREEN_WIDTH - SPRITE_SIZE * 4))
-							char_box.x += 20;
-						direction_state = 2;
-						if (anim_frame >= 3)
-							anim_frame = 0;
-						else
-							++anim_frame;
-						break;
-					case SDLK_UP:
-						if (char_box.y > 0)
-								char_box.y -= 20;
-						direction_state = 0;
-						if (anim_frame >= 3)
-							anim_frame = 0;
-						else
-							++anim_frame;
-						break;
-					case SDLK_DOWN:
-						if (char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 4))
-							char_box.y += 20;
-						direction_state = 4;
-						if (anim_frame >= 3)
-							anim_frame = 0;
-						else
-							++anim_frame;
-						break;
-					case SDLK_ESCAPE:
-						quit = true;
-						break;
-				}
 			if (e.type == SDL_MOUSEBUTTONDOWN)
+				quit = true;
+		}
+
+		if (keys[SDL_SCANCODE_LEFT]) {
+			if (char_box.x > 0)
+				char_box.x -= 20;
+				direction_state = 6;
+				if (anim_frame >= 3)
+					anim_frame = 0;
+				else
+					++anim_frame;
+		}
+		if (keys[SDL_SCANCODE_RIGHT]) {
+			if (char_box.x < (SCREEN_WIDTH - SPRITE_SIZE * 4))
+				char_box.x += 20;
+				direction_state = 2;
+				if (anim_frame >= 3)
+					anim_frame = 0;
+				else
+					++anim_frame;
+		}
+		if (keys[SDL_SCANCODE_UP]) {
+			if (char_box.y > 0)
+				char_box.y -= 20;
+				direction_state = 0;
+				if (anim_frame >= 3)
+					anim_frame = 0;
+				else
+					++anim_frame;
+		}
+		if (keys[SDL_SCANCODE_DOWN]) {
+			if (char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 4))
+				char_box.y += 20;
+				direction_state = 4;
+				if (anim_frame >= 3)
+					anim_frame = 0;
+				else
+					++anim_frame;
+		}
+		if (keys[SDL_SCANCODE_UP] && keys[SDL_SCANCODE_RIGHT]) {
+			if ((char_box.y > 0) && (char_box.x < (SCREEN_WIDTH - SPRITE_SIZE * 4))) {
+				char_box.x += 10;
+				char_box.y -= 10;
+			}
+			direction_state = 1;
+			if (anim_frame >= 3)
+				anim_frame = 0;
+			else
+				++anim_frame;
+		}
+		if (keys[SDL_SCANCODE_UP] && keys[SDL_SCANCODE_LEFT]) {
+			if ((char_box.y > 0) && (char_box.x > 0)) {
+				char_box.x -= 10;
+				char_box.y -= 10;
+			}
+			direction_state = 5;
+			if (anim_frame >= 3)
+				anim_frame = 0;
+			else
+				++anim_frame;
+		}
+		if (keys[SDL_SCANCODE_DOWN] && keys[SDL_SCANCODE_RIGHT]) {
+			if ((char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 4)) &&
+					(char_box.x < (SCREEN_WIDTH - SPRITE_SIZE * 4))) {
+				char_box.x += 10;
+				char_box.y += 10;
+			}
+			direction_state = 3;
+			if (anim_frame >= 3)
+				anim_frame = 0;
+			else
+				++anim_frame;
+		}
+		if (keys[SDL_SCANCODE_DOWN] && keys[SDL_SCANCODE_LEFT]) {
+			if ((char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 4)) && (char_box.x > 0)) {
+				char_box.x -= 10;
+				char_box.y += 10;
+			}
+			direction_state = 7;
+			if (anim_frame >= 3)
+				anim_frame = 0;
+			else
+				++anim_frame;
+		}
+		if (keys[SDL_SCANCODE_ESCAPE]) {
 				quit = true;
 		}
 
