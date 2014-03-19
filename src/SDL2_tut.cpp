@@ -10,6 +10,7 @@ const int SCREEN_WIDTH = 1024;
 const int SCREEN_HEIGHT = 768;
 const int TILE_SIZE = 40;
 const int SPRITE_SIZE = 36;
+const int VELOCITY = 10;
 
 
 int main(int argc, char **argv) {
@@ -73,17 +74,15 @@ int main(int argc, char **argv) {
 	int anim_frame = 0;
 
 	SDL_Rect char_box;
-	char_box.x = SCREEN_WIDTH / 2 - SPRITE_SIZE * 2;
-	char_box.y = SCREEN_HEIGHT / 2 - SPRITE_SIZE * 2;
-	char_box.w = SPRITE_SIZE * 4;
-	char_box.h = SPRITE_SIZE * 4;
+	char_box.x = SCREEN_WIDTH / 2 - SPRITE_SIZE * 1.5;
+	char_box.y = SCREEN_HEIGHT / 2 - SPRITE_SIZE * 1.5;
+	char_box.w = SPRITE_SIZE * 3;
+	char_box.h = SPRITE_SIZE * 3;
 
 	SDL_Event e;
 	bool quit = false;
 
 	while (!quit) {
-
-		//SDL_PumpEvents();
 
 		SDL_RenderClear(renderer);
 
@@ -97,6 +96,7 @@ int main(int argc, char **argv) {
 		bg_box.h = SCREEN_HEIGHT;
 		renderTexture(bg, renderer, bg_box, nullptr);
 
+		//SDL_PumpEvents();
 		if (SDL_PollEvent(&e)) {
 			if (e.type == SDL_QUIT)
 				quit = true;
@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
 
 		if (keys[SDL_SCANCODE_LEFT]) {
 			if (char_box.x > 0)
-				char_box.x -= 20;
+				char_box.x -= VELOCITY;
 				direction_state = 6;
 				if (anim_frame >= 3)
 					anim_frame = 0;
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
 		}
 		if (keys[SDL_SCANCODE_RIGHT]) {
 			if (char_box.x < (SCREEN_WIDTH - SPRITE_SIZE * 4))
-				char_box.x += 20;
+				char_box.x += VELOCITY;
 				direction_state = 2;
 				if (anim_frame >= 3)
 					anim_frame = 0;
@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
 		}
 		if (keys[SDL_SCANCODE_UP]) {
 			if (char_box.y > 0)
-				char_box.y -= 20;
+				char_box.y -= VELOCITY;
 				direction_state = 0;
 				if (anim_frame >= 3)
 					anim_frame = 0;
@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
 		}
 		if (keys[SDL_SCANCODE_DOWN]) {
 			if (char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 4))
-				char_box.y += 20;
+				char_box.y += VELOCITY;
 				direction_state = 4;
 				if (anim_frame >= 3)
 					anim_frame = 0;
@@ -142,8 +142,8 @@ int main(int argc, char **argv) {
 		}
 		if (keys[SDL_SCANCODE_UP] && keys[SDL_SCANCODE_RIGHT]) {
 			if ((char_box.y > 0) && (char_box.x < (SCREEN_WIDTH - SPRITE_SIZE * 4))) {
-				char_box.x += 10;
-				char_box.y -= 10;
+				char_box.x += VELOCITY / 2;
+				char_box.y -= VELOCITY / 2;
 			}
 			direction_state = 1;
 			if (anim_frame >= 3)
@@ -153,8 +153,8 @@ int main(int argc, char **argv) {
 		}
 		if (keys[SDL_SCANCODE_UP] && keys[SDL_SCANCODE_LEFT]) {
 			if ((char_box.y > 0) && (char_box.x > 0)) {
-				char_box.x -= 10;
-				char_box.y -= 10;
+				char_box.x -= VELOCITY / 2;
+				char_box.y -= VELOCITY / 2;
 			}
 			direction_state = 5;
 			if (anim_frame >= 3)
@@ -165,8 +165,8 @@ int main(int argc, char **argv) {
 		if (keys[SDL_SCANCODE_DOWN] && keys[SDL_SCANCODE_RIGHT]) {
 			if ((char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 4)) &&
 					(char_box.x < (SCREEN_WIDTH - SPRITE_SIZE * 4))) {
-				char_box.x += 10;
-				char_box.y += 10;
+				char_box.x += VELOCITY / 2;
+				char_box.y += VELOCITY / 2;
 			}
 			direction_state = 3;
 			if (anim_frame >= 3)
@@ -176,8 +176,8 @@ int main(int argc, char **argv) {
 		}
 		if (keys[SDL_SCANCODE_DOWN] && keys[SDL_SCANCODE_LEFT]) {
 			if ((char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 4)) && (char_box.x > 0)) {
-				char_box.x -= 10;
-				char_box.y += 10;
+				char_box.x -= VELOCITY / 2;
+				char_box.y += VELOCITY / 2;
 			}
 			direction_state = 7;
 			if (anim_frame >= 3)
