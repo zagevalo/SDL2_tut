@@ -1,9 +1,11 @@
 #include <iostream>
+#include <sstream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
 #include "logging.h"
 #include "render.h"
+#include "timer.h"
 
 
 const int SCREEN_WIDTH = 1024;
@@ -82,12 +84,27 @@ int main(int argc, char **argv) {
 	SDL_Event e;
 	bool quit = false;
 
+	SDL_Color textColor = {0, 0, 0, 255};
+
+	LTimer fpsTimer;
+	int countedFrames = 0;
+	std::stringstream fpsText;
+	float avgFPS = 0;
+
+	fpsTimer.start();
+
+
 	while (!quit) {
 
 		SDL_RenderClear(renderer);
 
 		int bW, bH;
 		SDL_QueryTexture(bg, NULL, NULL, &bW, &bH);
+
+		// Calculate FPS
+		avgFPS = countedFrames / ( fpsTimer.getTicks() / 1000.f );
+		if ( avgFPS > 2000000 )
+			avgFPS = 0;
 
 		SDL_Rect bg_box;
 		bg_box.x = 0;
