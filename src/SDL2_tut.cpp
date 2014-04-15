@@ -2,6 +2,7 @@
 #include <sstream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "logging.h"
 #include "render.h"
@@ -33,6 +34,15 @@ int main(int argc, char **argv) {
 		logSDLError(std::cout, "IMG_Init");
 		return 1;
 	}
+
+
+	// Init SDL_ttf
+
+	if (TTF_Init() != 0) {
+		logSDLError(std::cout, "TTF_Init");
+		return 1;
+	}
+
 
 	// Create SDL_Window
 
@@ -86,7 +96,15 @@ int main(int argc, char **argv) {
 	SDL_Event e;
 	bool quit = false;
 
-	SDL_Color textColor = {0, 0, 0, 255};
+	TTF_Font* fps_font = openFont("res/beau.ttf", 25);
+	SDL_Color textColor = {0, 0, 0};
+
+	std::stringstream fps_text;
+	SDL_Texture* txt_image;
+	//SDL_Texture* txt_image = renderText("FPS test text", fps_font, textColor, renderer);
+	//if (txt_image == nullptr) {
+	//	return 1;
+	//}
 
 	LTimer fpsTimer;
 	int countedFrames = 0;
@@ -107,13 +125,22 @@ int main(int argc, char **argv) {
 		avgFPS = countedFrames / ( fpsTimer.getTicks() / 1000.f );
 		if ( avgFPS > 2000000 )
 			avgFPS = 0;
+		fps_text.str("");
+		fps_text << "FPS: " << avgFPS;
 
+		// Render BG
 		SDL_Rect bg_box;
 		bg_box.x = 0;
 		bg_box.y = 0;
 		bg_box.w = SCREEN_WIDTH;
 		bg_box.h = SCREEN_HEIGHT;
 		renderTexture(bg, renderer, bg_box, nullptr);
+
+		// Show FPS
+		txt_image = renderText(fps_text.str().c_str(), fps_font, textColor, renderer);
+		if (txt_image == nullptr) {
+			return 1;
+		}
 
 		//SDL_PumpEvents();
 		if (SDL_PollEvent(&e)) {
@@ -186,15 +213,21 @@ int main(int argc, char **argv) {
 
 		renderTexture(character, renderer, char_box, &char_clips[anim_frame][direction_state]);
 
+		renderTexture(txt_image, renderer, 20, 20, nullptr);
+
 		SDL_RenderPresent(renderer);
 
 		++frame;
 		if ( frame / 4 >= ANIMATION_FRAMES )
 			frame = 0;
+
+		++countedFrames;
 	}
 
 
 	// Cleanup
+
+	TTF_CloseFont(fps_font);
 
 	SDL_DestroyTexture(bg);
 	SDL_DestroyTexture(character);
