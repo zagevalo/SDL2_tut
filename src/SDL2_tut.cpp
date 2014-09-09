@@ -3,9 +3,10 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 
-#include "logging.h"
-#include "render.h"
+#include "logging/logging.h"
+#include "render/render.h"
 #include "timer.h"
 
 
@@ -15,6 +16,8 @@ const int TILE_SIZE = 40;
 const int SPRITE_SIZE = 36;
 const int ANIMATION_FRAMES = 4;
 const int VELOCITY = 4;
+
+Mix_Music *bgMusic = nullptr;
 
 
 int main(int argc, char **argv) {
@@ -44,6 +47,14 @@ int main(int argc, char **argv) {
 	}
 
 
+	// Init SDL_mixer
+
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0) {
+		logSDLError(std::cout, "Mix_OpenAudio");
+		return 1;
+	}
+
+
 	// Create SDL_Window
 
 	SDL_Window *win = SDL_CreateWindow("FCUK", 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
@@ -68,6 +79,15 @@ int main(int argc, char **argv) {
 
 
 	const Uint8 *keys = SDL_GetKeyboardState(NULL);
+
+	bgMusic = Mix_LoadMUS("res/bg.mp3");
+	if( bgMusic == nullptr ) {
+		logSDLError(std::cout, "Mix_LoadMUS");
+		return 5;
+	}
+
+	Mix_PlayMusic(bgMusic, -1);
+
 
 	// Main Loop
 
@@ -226,6 +246,9 @@ int main(int argc, char **argv) {
 
 
 	// Cleanup
+
+	Mix_FreeMusic(bgMusic);
+	bgMusic = nullptr;
 
 	TTF_CloseFont(fps_font);
 
