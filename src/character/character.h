@@ -1,3 +1,5 @@
+#pragma once
+
 class Character {
 	public:
 		const int TILE_SIZE = 40;
