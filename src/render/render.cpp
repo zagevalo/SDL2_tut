@@ -3,7 +3,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
-#include "logging.h"
+#include "../logging/logging.h"
 #include "render.h"
 
 

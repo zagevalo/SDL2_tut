@@ -8,16 +8,12 @@
 #include "logging/logging.h"
 #include "render/render.h"
 #include "timer.h"
+#include "character/character.h"
+#include "sound/sound.h"
+
+#include "consts.h"
 
 
-const int SCREEN_WIDTH = 1024;
-const int SCREEN_HEIGHT = 768;
-const int TILE_SIZE = 40;
-const int SPRITE_SIZE = 36;
-const int ANIMATION_FRAMES = 4;
-const int VELOCITY = 4;
-
-Mix_Music *bgMusic = nullptr;
 
 
 int main(int argc, char **argv) {
@@ -49,7 +45,7 @@ int main(int argc, char **argv) {
 
 	// Init SDL_mixer
 
-	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0) {
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) != 0) {
 		logSDLError(std::cout, "Mix_OpenAudio");
 		return 1;
 	}
@@ -73,23 +69,21 @@ int main(int argc, char **argv) {
 
 
 	SDL_Texture *bg = loadTexture("res/bg.png", renderer);
-	SDL_Texture *character = loadTexture("res/Alice_spritesheet.png", renderer);
-	if (bg == nullptr || character == nullptr)
-		return 4;
+	Character Alice;
+
+	Alice.char_tex = loadTexture("res/Alice_spritesheet.png", renderer);
+	if (bg == nullptr || Alice.char_tex == nullptr)
+			return 4;
 
 
 	const Uint8 *keys = SDL_GetKeyboardState(NULL);
 
-	bgMusic = Mix_LoadMUS("res/bg.mp3");
-	if( bgMusic == nullptr ) {
-		logSDLError(std::cout, "Mix_LoadMUS");
-		return 5;
-	}
-
-	Mix_PlayMusic(bgMusic, -1);
-
 
 	// Main Loop
+
+	Mix_Music *bg_mus = loadBGMusic("res/bg.mp3");
+	playBGMusic(bg_mus);
+	bool mus_status = true;
 
 	SDL_Rect char_clips[4][8];
 	for (int i=0; i < 8; i++) {
@@ -100,18 +94,6 @@ int main(int argc, char **argv) {
 			char_clips[j][i].h = SPRITE_SIZE;
 		}
 	}
-
-	int direction_state = 4; // 0 - up, 1 - up_right, 2 - right, 3 - right_down, 4 - down,
-							 // 5 - down_left, 6 - left, 7 - left_up
-
-	int anim_frame = 0;
-	int frame = 0;
-
-	SDL_Rect char_box;
-	char_box.x = SCREEN_WIDTH / 2 - SPRITE_SIZE * 1.5;
-	char_box.y = SCREEN_HEIGHT / 2 - SPRITE_SIZE * 1.5;
-	char_box.w = SPRITE_SIZE * 3;
-	char_box.h = SPRITE_SIZE * 3;
 
 	SDL_Event e;
 	bool quit = false;
@@ -171,75 +153,85 @@ int main(int argc, char **argv) {
 		}
 
 		if (keys[SDL_SCANCODE_LEFT]) {
-			direction_state = 6;
-			anim_frame = frame / 4;
-			if (char_box.x > 0)
-				char_box.x -= VELOCITY;
+			Alice.direction_state = 6;
+			Alice.anim_frame = Alice.frame / 4;
+			if (Alice.char_box.x > 0)
+				Alice.char_box.x -= VELOCITY;
 		}
 		if (keys[SDL_SCANCODE_RIGHT]) {
-			direction_state = 2;
-			anim_frame = frame / 4;
-			if (char_box.x <= (SCREEN_WIDTH - SPRITE_SIZE * 3))
-				char_box.x += VELOCITY;
+			Alice.direction_state = 2;
+			Alice.anim_frame = Alice.frame / 4;
+			if (Alice.char_box.x <= (SCREEN_WIDTH - SPRITE_SIZE * 3))
+				Alice.char_box.x += VELOCITY;
 		}
 		if (keys[SDL_SCANCODE_UP]) {
-			direction_state = 0;
-			anim_frame = frame / 4;
-			if (char_box.y > 0)
-				char_box.y -= VELOCITY;
+			Alice.direction_state = 0;
+			Alice.anim_frame = Alice.frame / 4;
+			if (Alice.char_box.y > 0)
+				Alice.char_box.y -= VELOCITY;
 		}
 		if (keys[SDL_SCANCODE_DOWN]) {
-			direction_state = 4;
-			anim_frame = frame / 4;
-			if (char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 3))
-				char_box.y += VELOCITY;
+			Alice.direction_state = 4;
+			Alice.anim_frame = Alice.frame / 4;
+			if (Alice.char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 3))
+				Alice.char_box.y += VELOCITY;
 		}
 		if (keys[SDL_SCANCODE_UP] && keys[SDL_SCANCODE_RIGHT]) {
-			direction_state = 1;
-			anim_frame = frame / 4;
-			if ((char_box.y > 0) && (char_box.x < (SCREEN_WIDTH - SPRITE_SIZE * 3))) {
-				char_box.x += VELOCITY / 2;
-				char_box.y -= VELOCITY / 2;
+			Alice.direction_state = 1;
+			Alice.anim_frame = Alice.frame / 4;
+			if ((Alice.char_box.y > 0) && (Alice.char_box.x < (SCREEN_WIDTH - SPRITE_SIZE * 3))) {
+				Alice.char_box.x += VELOCITY / 2;
+				Alice.char_box.y -= VELOCITY / 2;
 			}
 		}
 		if (keys[SDL_SCANCODE_UP] && keys[SDL_SCANCODE_LEFT]) {
-			direction_state = 5;
-			anim_frame = frame / 4;
-			if ((char_box.y > 0) && (char_box.x > 0)) {
-				char_box.x -= VELOCITY / 2;
-				char_box.y -= VELOCITY / 2;
+			Alice.direction_state = 5;
+			Alice.anim_frame = Alice.frame / 4;
+			if ((Alice.char_box.y > 0) && (Alice.char_box.x > 0)) {
+				Alice.char_box.x -= VELOCITY / 2;
+				Alice.char_box.y -= VELOCITY / 2;
 			}
 		}
 		if (keys[SDL_SCANCODE_DOWN] && keys[SDL_SCANCODE_RIGHT]) {
-			direction_state = 3;
-			anim_frame = frame / 4;
-			if ((char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 3)) &&
-					(char_box.x < (SCREEN_WIDTH - SPRITE_SIZE * 3))) {
-				char_box.x += VELOCITY / 2;
-				char_box.y += VELOCITY / 2;
+			Alice.direction_state = 3;
+			Alice.anim_frame = Alice.frame / 4;
+			if ((Alice.char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 3)) &&
+					(Alice.char_box.x < (SCREEN_WIDTH - SPRITE_SIZE * 3))) {
+				Alice.char_box.x += VELOCITY / 2;
+				Alice.char_box.y += VELOCITY / 2;
 			}
 		}
 		if (keys[SDL_SCANCODE_DOWN] && keys[SDL_SCANCODE_LEFT]) {
-			direction_state = 7;
-			anim_frame = frame / 4;
-			if ((char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 3)) && (char_box.x > 0)) {
-				char_box.x -= VELOCITY / 2;
-				char_box.y += VELOCITY / 2;
+			Alice.direction_state = 7;
+			Alice.anim_frame = Alice.frame / 4;
+			if ((Alice.char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 3)) && (Alice.char_box.x > 0)) {
+				Alice.char_box.x -= VELOCITY / 2;
+				Alice.char_box.y += VELOCITY / 2;
+			}
+		}
+		if (keys[SDL_SCANCODE_P]) {
+			if (mus_status) {
+				pauseBGMusic();
+				mus_status = false;
+			}
+			else {
+				resumeBGMusic();
+				mus_status = true;
 			}
 		}
 		if (keys[SDL_SCANCODE_ESCAPE]) {
-				quit = true;
+			quit = true;
 		}
 
-		renderTexture(character, renderer, char_box, &char_clips[anim_frame][direction_state]);
+		renderTexture(Alice.char_tex, renderer, Alice.char_box, &char_clips[Alice.anim_frame][Alice.direction_state]);
 
 		renderTexture(txt_image, renderer, 20, 20, nullptr);
 
 		SDL_RenderPresent(renderer);
 
-		++frame;
-		if ( frame / 4 >= ANIMATION_FRAMES )
-			frame = 0;
+		++Alice.frame;
+		if ( Alice.frame / 4 >= ANIMATION_FRAMES )
+			Alice.frame = 0;
 
 		++countedFrames;
 	}
@@ -247,13 +239,12 @@ int main(int argc, char **argv) {
 
 	// Cleanup
 
-	Mix_FreeMusic(bgMusic);
-	bgMusic = nullptr;
+	unloadBGMusic(bg_mus);
 
 	TTF_CloseFont(fps_font);
 
 	SDL_DestroyTexture(bg);
-	SDL_DestroyTexture(character);
+	SDL_DestroyTexture(Alice.char_tex);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(win);
 
