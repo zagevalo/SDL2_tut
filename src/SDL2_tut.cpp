@@ -178,16 +178,16 @@ int main(int argc, char **argv) {
 			Alice.direction_state = 1;
 			Alice.anim_frame = Alice.frame / 4;
 			if ((Alice.char_box.y > 0) && (Alice.char_box.x < (SCREEN_WIDTH - SPRITE_SIZE * 3))) {
-				Alice.char_box.x += VELOCITY / 2;
-				Alice.char_box.y -= VELOCITY / 2;
+				Alice.char_box.x += VELOCITY / 4;
+				Alice.char_box.y -= VELOCITY / 4;
 			}
 		}
 		if (keys[SDL_SCANCODE_UP] && keys[SDL_SCANCODE_LEFT]) {
 			Alice.direction_state = 5;
 			Alice.anim_frame = Alice.frame / 4;
 			if ((Alice.char_box.y > 0) && (Alice.char_box.x > 0)) {
-				Alice.char_box.x -= VELOCITY / 2;
-				Alice.char_box.y -= VELOCITY / 2;
+				Alice.char_box.x -= VELOCITY / 4;
+				Alice.char_box.y -= VELOCITY / 4;
 			}
 		}
 		if (keys[SDL_SCANCODE_DOWN] && keys[SDL_SCANCODE_RIGHT]) {
@@ -195,16 +195,16 @@ int main(int argc, char **argv) {
 			Alice.anim_frame = Alice.frame / 4;
 			if ((Alice.char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 3)) &&
 					(Alice.char_box.x < (SCREEN_WIDTH - SPRITE_SIZE * 3))) {
-				Alice.char_box.x += VELOCITY / 2;
-				Alice.char_box.y += VELOCITY / 2;
+				Alice.char_box.x += VELOCITY / 4;
+				Alice.char_box.y += VELOCITY / 4;
 			}
 		}
 		if (keys[SDL_SCANCODE_DOWN] && keys[SDL_SCANCODE_LEFT]) {
 			Alice.direction_state = 7;
 			Alice.anim_frame = Alice.frame / 4;
 			if ((Alice.char_box.y < (SCREEN_HEIGHT - SPRITE_SIZE * 3)) && (Alice.char_box.x > 0)) {
-				Alice.char_box.x -= VELOCITY / 2;
-				Alice.char_box.y += VELOCITY / 2;
+				Alice.char_box.x -= VELOCITY / 4;
+				Alice.char_box.y += VELOCITY / 4;
 			}
 		}
 		if (keys[SDL_SCANCODE_P]) {
