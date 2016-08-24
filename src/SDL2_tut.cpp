@@ -10,69 +10,28 @@
 #include "timer.h"
 #include "character/character.h"
 #include "sound/sound.h"
+#include "SDL_Routine/SDL_Routine.h"
 
 #include "consts.h"
 
 
 int main(int argc, char **argv) {
 
-	// Init SDL
+	// Init all SDl stuff
 
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-		logSDLError(std::cout, "SDL_Init");
+	SDL_Routine SDL_hdl;
+	if (SDL_hdl.InitSDL()) {
+		logSDLError(std::cout, "SDL Init");
 		return 1;
 	}
 
-
-	// Init SDL_image
-
-	int img_init_flags = IMG_INIT_JPG | IMG_INIT_PNG;
-	if ((IMG_Init(img_init_flags) & img_init_flags) != img_init_flags) {
-		logSDLError(std::cout, "IMG_Init");
-		return 1;
-	}
-
-
-	// Init SDL_ttf
-
-	if (TTF_Init() != 0) {
-		logSDLError(std::cout, "TTF_Init");
-		return 1;
-	}
-
-
-	// Init SDL_mixer
-
-	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) != 0) {
-		logSDLError(std::cout, "Mix_OpenAudio");
-		return 1;
-	}
-
-
-	// Create SDL_Window
-
-	SDL_Window *win = SDL_CreateWindow("FCUK", 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-	if (win == nullptr) {
-		logSDLError(std::cout, "CreateWindow");
-		return 1;
-	}
-
-	// Create SDL_Renderer
-
-	SDL_Renderer *renderer = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-	if (renderer == nullptr) {
-		logSDLError(std::cout, "CreateRenderer");
-		return 1;
-	}
-
-
-	SDL_Texture *bg = loadTexture("res/bg.png", renderer);
+	SDL_Texture *bg = loadTexture("res/bg.png", SDL_hdl.Render);
 	Character Alice;
 
-	Alice.char_tex = loadTexture("res/Alice_spritesheet.png", renderer);
+	Alice.loadTex("res/Alice_spritesheet.png", SDL_hdl.Render);
+
 	if (bg == nullptr || Alice.char_tex == nullptr)
 			return 4;
-
 
 	const Uint8 *keys = SDL_GetKeyboardState(NULL);
 
@@ -82,16 +41,6 @@ int main(int argc, char **argv) {
 	Mix_Music *bg_mus = loadBGMusic("res/bg.mp3");
 	playBGMusic(bg_mus);
 	bool mus_status = true;
-
-	SDL_Rect char_clips[4][8];
-	for (int i=0; i < 8; i++) {
-		for (int j=0; j < 4; j++) {
-			char_clips[j][i].x = j * SPRITE_SIZE;
-			char_clips[j][i].y = i * SPRITE_SIZE;
-			char_clips[j][i].w = SPRITE_SIZE;
-			char_clips[j][i].h = SPRITE_SIZE;
-		}
-	}
 
 	SDL_Event e;
 	bool quit = false;
@@ -116,7 +65,7 @@ int main(int argc, char **argv) {
 
 	while (!quit) {
 
-		SDL_RenderClear(renderer);
+		SDL_RenderClear(SDL_hdl.Render);
 
 		int bW, bH;
 		SDL_QueryTexture(bg, NULL, NULL, &bW, &bH);
@@ -134,10 +83,10 @@ int main(int argc, char **argv) {
 		bg_box.y = 0;
 		bg_box.w = SCREEN_WIDTH;
 		bg_box.h = SCREEN_HEIGHT;
-		renderTexture(bg, renderer, bg_box, nullptr);
+		renderTexture(bg, SDL_hdl.Render, bg_box, nullptr);
 
 		// Show FPS
-		txt_image = renderText(fps_text.str().c_str(), fps_font, textColor, renderer);
+		txt_image = renderText(fps_text.str().c_str(), fps_font, textColor, SDL_hdl.Render);
 		if (txt_image == nullptr) {
 			return 1;
 		}
@@ -221,11 +170,11 @@ int main(int argc, char **argv) {
 			quit = true;
 		}
 
-		renderTexture(Alice.char_tex, renderer, Alice.char_box, &char_clips[Alice.anim_frame][Alice.direction_state]);
+		renderTexture(Alice.char_tex, SDL_hdl.Render, Alice.char_box, &Alice.char_clips[Alice.anim_frame][Alice.direction_state]);
 
-		renderTexture(txt_image, renderer, 20, 20, nullptr);
+		renderTexture(txt_image, SDL_hdl.Render, 20, 20, nullptr);
 
-		SDL_RenderPresent(renderer);
+		SDL_RenderPresent(SDL_hdl.Render);
 
 		++Alice.frame;
 		if ( Alice.frame / 4 >= ANIMATION_FRAMES )
@@ -243,9 +192,8 @@ int main(int argc, char **argv) {
 
 	SDL_DestroyTexture(bg);
 	SDL_DestroyTexture(Alice.char_tex);
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(win);
 
-	SDL_Quit();
+	SDL_hdl.CleanupSDL();
+
 	return 0;
 }

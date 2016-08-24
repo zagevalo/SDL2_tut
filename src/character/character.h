@@ -13,6 +13,8 @@ class Character {
 
 		void render();
 
+		void loadTex(const std::string &file, SDL_Renderer *ren);
+
 		SDL_Texture *char_tex;
 		int anim_frame;
 		int frame;
@@ -20,6 +22,7 @@ class Character {
 							 // 5 - down_left, 6 - left, 7 - left_up
 
 		SDL_Rect char_box;
+		SDL_Rect char_clips[4][8];
 
 	private:
 
