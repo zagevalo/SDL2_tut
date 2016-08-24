@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 	if (bg == nullptr || Alice.char_tex == nullptr)
 			return 4;
 
-	const Uint8 *keys = SDL_GetKeyboardState(NULL);
+	const Uint8 *keys = SDL_GetKeyboardState(nullptr);
 
 
 	// Main Loop
@@ -43,6 +43,7 @@ int main(int argc, char **argv) {
 	bool mus_status = true;
 
 	SDL_Event e;
+	bool show_fps = true;
 	bool quit = false;
 
 	TTF_Font* fps_font = openFont("res/beau.ttf", 25);
@@ -86,9 +87,11 @@ int main(int argc, char **argv) {
 		renderTexture(bg, SDL_hdl.Render, bg_box, nullptr);
 
 		// Show FPS
-		txt_image = renderText(fps_text.str().c_str(), fps_font, textColor, SDL_hdl.Render);
-		if (txt_image == nullptr) {
-			return 1;
+		if (show_fps) {
+			txt_image = renderText(fps_text.str().c_str(), fps_font, textColor, SDL_hdl.Render);
+			if (txt_image == nullptr) {
+				return 1;
+			}
 		}
 
 		//SDL_PumpEvents();
@@ -166,13 +169,21 @@ int main(int argc, char **argv) {
 				mus_status = true;
 			}
 		}
+		if (keys[SDL_SCANCODE_GRAVE]) {
+			if (show_fps)
+				show_fps = false;
+			else {
+				show_fps = true;
+			}
+		}
 		if (keys[SDL_SCANCODE_ESCAPE]) {
 			quit = true;
 		}
 
 		renderTexture(Alice.char_tex, SDL_hdl.Render, Alice.char_box, &Alice.char_clips[Alice.anim_frame][Alice.direction_state]);
 
-		renderTexture(txt_image, SDL_hdl.Render, 20, 20, nullptr);
+		if (show_fps)
+			renderTexture(txt_image, SDL_hdl.Render, 20, 20, nullptr);
 
 		SDL_RenderPresent(SDL_hdl.Render);
 
